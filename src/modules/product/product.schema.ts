@@ -2,6 +2,92 @@ import { z } from "zod";
 import { buildJsonSchemas } from "fastify-zod";
 import { bindExamples } from "../../utils/openApiSpec";
 
+// 参考：https://qiita.com/YudaiTsukamoto/items/37ee62d3a7ff6e2d52f9
+const User = z.object({
+  id: z.number(),
+  name: z.string(),
+  email: z.string().email(),
+});
+
+type User = z.infer<typeof User>;
+
+const Post = z.object({
+  id: z.number(),
+  title: z.string(),
+  user: User,
+});
+
+type Post = z.infer<typeof Post>;
+
+const validJson = JSON.stringify({
+  id: 1,
+  title: "title",
+  user: {
+    id: 1,
+    name: "name",
+    email: "email@email.com",
+  },
+});
+
+const invalidJson = JSON.stringify({
+  id: 1,
+  title: "title",
+  user: {
+    id: 1,
+    // "name": "name", name should be required
+    email: "email@email.com",
+  },
+});
+
+try {
+  const post: Post = Post.parse(JSON.parse('{"id":true, "title":42}'));
+  // ↑を実行すると以下のメッセージがcatchのeに入っている
+  // issues: [
+  //   {
+  //     code: 'invalid_type',
+  //     expected: 'number',
+  //     received: 'boolean',
+  //     path: [Array],
+  //     message: 'Expected number, received boolean'
+  //   },
+  //   {
+  //     code: 'invalid_type',
+  //     expected: 'string',
+  //     received: 'number',
+  //     path: [Array],
+  //     message: 'Expected string, received number'
+  //   },
+  //   {
+  //     code: 'invalid_type',
+  //     expected: 'object',
+  //     received: 'undefined',
+  //     path: [Array],
+  //     message: 'Required'
+  //   }
+  // ],
+  const validPost: Post = Post.parse(JSON.parse(validJson));
+  console.log(validPost);
+  // ↑を実行すると以下のメッセージが入っている（console.logで出力したもの）バリデーションOKなのでcatchのeには何も入っていない。
+  // {
+  //   id: 1,
+  //   title: 'title',
+  //   user: { id: 1, name: 'name', email: 'email@email.com' }
+  // }
+  const invalidPost: Post = Post.parse(JSON.parse(invalidJson));
+  // ↑を実行すると以下のメッセージがcatchのeに入っている
+  // issues: [
+  //   {
+  //     code: 'invalid_type',
+  //     expected: 'string',
+  //     received: 'undefined',
+  //     path: [Array],
+  //     message: 'Required'
+  //   }
+  // ],
+} catch (e) {
+  console.log(e);
+}
+
 export const ProductType = {
   book: "book",
   movie: "movie",
