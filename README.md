@@ -1,3 +1,17 @@
+# 目次
+
+<!-- TOC -->
+
+- [目次](#目次)
+- [参考 URL](#参考-url)
+- [概要](#概要)
+- [実装の進め方](#実装の進め方)
+- [実行サンプル](#実行サンプル)
+  - [型や値の実装](#型や値の実装)
+  - [バリデーション実行部分](#バリデーション実行部分)
+
+<!-- /TOC -->
+
 # 参考 URL
 
 - [zod を使って JSON.parse したオブジェクトを validation して型安全にしたい](https://qiita.com/YudaiTsukamoto/items/37ee62d3a7ff6e2d52f9)
@@ -124,3 +138,5 @@ try {
   console.log(e);
 }
 ```
+
+これらのソースコードは`src/modules/product/product.schema.ts`に記載。
