@@ -7,6 +7,7 @@
 - [概要](#概要)
 - [実装の進め方](#実装の進め方)
 - [実行サンプル](#実行サンプル)
+  - [解説](#解説)
   - [型や値の実装](#型や値の実装)
   - [バリデーション実行部分](#バリデーション実行部分)
 
@@ -45,10 +46,9 @@ email 形式か？などよくあるバリデーションも一緒に行う。
 
 # 実行サンプル
 
-## 型や値の実装
+## 解説
 
 ```ts
-// 参考：https://qiita.com/YudaiTsukamoto/items/37ee62d3a7ff6e2d52f9
 const User = z.object({
   id: z.number(),
   name: z.string(),
@@ -56,14 +56,42 @@ const User = z.object({
 });
 
 type User = z.infer<typeof User>;
+```
 
-const Post = z.object({
+として型を作っているのはあくまで型の二重管理を防ぐため。  
+この型を使ったからといって自動的にバリデーションはかからない。
+
+バリデーションは zod スキーマが持っているメソッド。
+
+```ts
+zodスキーマ名.parse(バリデーションで検証したい値);
+```
+
+```ts
+PostSchema.parse(JSON.parse('{"id":true, "title":42}'));
+```
+
+の様にして値を検証する。
+
+## 型や値の実装
+
+```ts
+// 参考：https://qiita.com/YudaiTsukamoto/items/37ee62d3a7ff6e2d52f9
+const UserSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  email: z.string().email(),
+});
+
+type User = z.infer<typeof UserSchema>;
+
+const PostSchema = z.object({
   id: z.number(),
   title: z.string(),
   user: User,
 });
 
-type Post = z.infer<typeof Post>;
+type Post = z.infer<typeof PostSchema>;
 
 const validJson = JSON.stringify({
   id: 1,
@@ -90,7 +118,7 @@ const invalidJson = JSON.stringify({
 
 ```ts
 try {
-  const post: Post = Post.parse(JSON.parse('{"id":true, "title":42}'));
+  const post: Post = PostSchema.parse(JSON.parse('{"id":true, "title":42}'));
   // ↑を実行すると以下のメッセージがcatchのeに入っている
   // issues: [
   //   {
